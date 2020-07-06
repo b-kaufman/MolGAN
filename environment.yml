@@ -24,7 +24,6 @@ dependencies:
   - entrypoints=0.3
   - fontconfig=2.13.0
   - freetype=2.9.1
-  - gast=0.3.3
   - gettext=0.19.8.1
   - glib=2.63.1
   - grpcio=1.23.0
@@ -108,8 +107,8 @@ dependencies:
   - setuptools=46.4.0
   - six=1.14.0
   - sqlite=3.31.1
-  - tensorboard=1.8.0
-  - tensorflow=1.8.0
+  - tensorboard=1.15.0
+  - tensorflow-gpu=1.15.0
   - termcolor=1.1.0
   - terminado=0.8.3
   - testpath=0.4.4
@@ -119,7 +118,6 @@ dependencies:
   - urllib3=1.25.9
   - wcwidth=0.1.9
   - webencodings=0.5.1
-  - werkzeug=1.0.1
   - wheel=0.34.2
   - xz=5.2.5
   - zeromq=4.3.2

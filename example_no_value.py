@@ -9,19 +9,20 @@ from models import encoder_rgcn, decoder_adj, decoder_dot, decoder_rnn
 
 from optimizers.gan import GraphGANValuelessOptimizer
 
+import sys
 batch_dim = 128
 la = 1
 dropout = 0
 n_critic = 5
 metric = 'validity,sas'
-n_samples = 1000
+n_samples = 5000
 z_dim = 8
-epochs = 300
+epochs = 10
 save_every = 1 # May lead to errors if left as None
-
+save_dir = 'saved_models/gdb9_no_val'
 data = SparseMolecularDataset()
-data.load('data/iso_ac.sparsedataset')
-
+data.load('data/gdb9_9nodes.sparsedataset')
+sys.stdout = open(save_dir +'/log.txt', 'w')
 steps = (len(data) // batch_dim)
 
 
@@ -179,6 +180,6 @@ trainer.train(batch_dim=batch_dim,
               test_fetch_dict=test_fetch_dict,
               test_feed_dict=test_feed_dict,
               save_every=save_every,
-              directory='saved_models/real_no_val_iso_ac', # here users need to first create and then specify a folder where to save the model
+              directory=save_dir, # here users need to first create and then specify a folder where to save the model
               _eval_update=_eval_update,
               _test_update=_test_update)

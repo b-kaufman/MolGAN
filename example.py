@@ -9,21 +9,24 @@ from models import encoder_rgcn, decoder_adj, decoder_dot, decoder_rnn
 
 from optimizers.gan import GraphGANOptimizer
 
+import sys
+
 batch_dim = 128
 la = 1
 dropout = 0
 n_critic = 5
 metric = 'validity,sas'
-n_samples = 1000 #orig 5000
+n_samples = 5000 #orig 5000
 z_dim = 8
-epochs = 400 #orig 10
+epochs = 10 #orig 10
 save_every = 1 # May lead to errors if left as None
-
+save_dir = 'saved_models/gdb9_val'
 data = SparseMolecularDataset()
-data.load('data/iso_ac.sparsedataset')
+data.load('data/gdb9_9nodes.sparsedataset')
 
 steps = (len(data) // batch_dim)
 
+sys.stdout = open(save_dir +'/log.txt', 'w')
 
 def train_fetch_dict(i, steps, epoch, epochs, min_epochs, model, optimizer):
     # return list containing variable updates from backprop for each sub-network in the model.
@@ -132,6 +135,38 @@ def test_feed_dict(model, optimizer, batch_dim):
     return feed_dict
 
 
+def _test_step(model, optimizer, batch_dim, test_batch, start_time, _test_update):
+    self.load(directory)
+    from_start = timedelta(seconds=int((time.time() - start_time)))
+    self.log('End of training ({} epochs) in {}'.format(epochs, from_start))
+
+    if test_batch is not None:
+        pr = ProgressBar(80, test_batch)
+        output = defaultdict(list)
+
+        for i in range(test_batch):
+            for k, v in self.session.run(test_fetch_dict(model, optimizer),
+                                             feed_dict=test_feed_dict(model, optimizer, batch_dim)).items():
+                output[k].append(v)
+            pr.update(i + 1)
+
+        self.log(date=False)
+        output = {k: np.mean(v) for k, v in output.items()}
+    else:
+        output = self.session.run(test_fetch_dict(model, optimizer),
+                                      feed_dict=test_feed_dict(model, optimizer, batch_dim))
+
+    if _test_update is not None:
+        output.update(_test_update(model, optimizer, batch_dim, test_batch))
+
+    p = pprint.PrettyPrinter(indent=1, width=80)
+    self.log('Test --> {}'.format(p.pformat(output)))
+
+    for k in output:
+        self.print['Test ' + k].append(output[k])
+
+    return output
+
 def reward(mols):
     rr = 1.
     for m in ('logp,sas,qed,unique' if metric == 'all' else metric).split(','):
@@ -210,7 +245,8 @@ trainer.train(batch_dim=batch_dim,
               eval_feed_dict=eval_feed_dict,
               test_fetch_dict=test_fetch_dict,
               test_feed_dict=test_feed_dict,
+              _test_step= _test_step,
               save_every=save_every,
-              directory='saved_models/no_val_iso_ac', # here users need to first create and then specify a folder where to save the model
+              directory=save_dir, # here users need to first create and then specify a folder where to save the model
               _eval_update=_eval_update,
               _test_update=_test_update)
